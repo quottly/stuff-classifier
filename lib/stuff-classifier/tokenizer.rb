@@ -4,15 +4,17 @@ require "lingua/stemmer"
 
 class StuffClassifier::Tokenizer
   require  "stuff-classifier/tokenizer/tokenizer_properties"
-  
+  attr_accessor :stemmer
+
   def initialize(opts={})
     @language = opts.key?(:language) ? opts[:language] : "en"
     @properties = StuffClassifier::Tokenizer::TOKENIZER_PROPERTIES[@language]
-    
+
     @stemming = opts.key?(:stemming) ? opts[:stemming] : true
-    if @stemming
-      @stemmer = Lingua::Stemmer.new(:language => @language)
-    end
+  end
+
+  def stemmer
+    @stemmer ||= Lingua::Stemmer.new(:language => @language)
   end
 
   def language
@@ -57,7 +59,7 @@ class StuffClassifier::Tokenizer
           next if w == '' || ignore_words.member?(w.downcase)
 
         if stemming? and stemable?(w)
-          w = @stemmer.stem(w).downcase
+          w = stemmer.stem(w).downcase
           next if ignore_words.member?(w)
         else
           w = w.downcase
@@ -70,10 +72,10 @@ class StuffClassifier::Tokenizer
     return words
   end
 
-private 
+private
 
   def stemable?(word)
     word =~ /^\p{Alpha}+$/
   end
-  
+
 end
